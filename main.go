@@ -25,6 +25,7 @@ func main() {
 			w.Write([]byte("ok"))
 		})
 		r.Mount("/users", routes.UsersRouter())
+		r.Mount("/plans", routes.PlansRouter())
 	})
 
 	fmt.Println("Server running on port 3333")
