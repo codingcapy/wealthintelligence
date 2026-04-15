@@ -1,9 +1,12 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
+	"strings"
 
 	"wealthintelligence/db"
 	"wealthintelligence/routes"
@@ -12,6 +15,9 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
 )
+
+//go:embed frontend/dist
+var staticFiles embed.FS
 
 func main() {
 	godotenv.Load()
@@ -27,10 +33,42 @@ func main() {
 		r.Mount("/users", routes.UsersRouter())
 		r.Mount("/plans", routes.PlansRouter())
 		r.Mount("/incomes", routes.IncomesRouter())
-		r.Mount("/expenditures", routes.ExpendituresRouter())
-		r.Mount("/assets", routes.AssetsRouter())
 		r.Mount("/liabilities", routes.LiabilitiesRouter())
+		r.Mount("/assets", routes.AssetsRouter())
+		r.Mount("/expenditures", routes.ExpendituresRouter())
 		r.Mount("/financialgoals", routes.FinancialGoalsRouter())
+		r.Mount("/generations", routes.GenerationsRouter())
+	})
+
+	// Static frontend serving
+	stripped, _ := fs.Sub(staticFiles, "frontend/dist")
+	fileServer := http.FileServer(http.FS(stripped))
+
+	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+		path := strings.TrimPrefix(r.URL.Path, "/")
+
+		_, err := stripped.Open(path)
+		if err != nil {
+			// file not found — serve index.html for React router to handle
+			r.URL.Path = "/"
+			path = "index.html"
+		}
+
+		// Set correct MIME types
+		switch {
+		case strings.HasSuffix(path, ".js"):
+			w.Header().Set("Content-Type", "application/javascript")
+		case strings.HasSuffix(path, ".css"):
+			w.Header().Set("Content-Type", "text/css")
+		case strings.HasSuffix(path, ".svg"):
+			w.Header().Set("Content-Type", "image/svg+xml")
+		case strings.HasSuffix(path, ".png"):
+			w.Header().Set("Content-Type", "image/png")
+		case strings.HasSuffix(path, ".ico"):
+			w.Header().Set("Content-Type", "image/x-icon")
+		}
+
+		fileServer.ServeHTTP(w, r)
 	})
 
 	fmt.Println("Server running on port 3333")
