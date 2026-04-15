@@ -26,6 +26,11 @@ func main() {
 		})
 		r.Mount("/users", routes.UsersRouter())
 		r.Mount("/plans", routes.PlansRouter())
+		r.Mount("/incomes", routes.IncomesRouter())
+		r.Mount("/expenditures", routes.ExpendituresRouter())
+		r.Mount("/assets", routes.AssetsRouter())
+		r.Mount("/liabilities", routes.LiabilitiesRouter())
+		r.Mount("/financialgoals", routes.FinancialGoalsRouter())
 	})
 
 	fmt.Println("Server running on port 3333")
