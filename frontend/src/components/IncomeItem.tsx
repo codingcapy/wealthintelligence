@@ -1,6 +1,6 @@
 import { FaCheck, FaTrashCan, FaXmark } from "react-icons/fa6";
 import { MdModeEditOutline } from "react-icons/md";
-import { Income } from "../../../schemas/incomes";
+import { type DeserializedIncome as Income } from "../lib/api/types";
 import { useState } from "react";
 import {
   useDeleteIncomeMutation,

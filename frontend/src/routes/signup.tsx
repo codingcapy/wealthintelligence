@@ -44,7 +44,9 @@ function SignupPage() {
   return (
     <div className="pt-5 md:mt-0 md:flex md:items-center h-screen bg-[#242424] text-white">
       <div className="md:w-[50vw]">
-        <div className="text-4xl text-center mb-2 font-bold">CapyPlan</div>
+        <div className="text-4xl text-center mb-2 font-bold">
+          WealthIntelligence
+        </div>
         <div className="text-center mb-5 md:mb-10">
           Your financial plan, in your hands
         </div>
@@ -107,7 +109,7 @@ function SignupPage() {
           Privacy Policy
         </Link>
         <div className="p-3 text-[#aaaaaa]">
-          Copyright &copy; 2026 CapyPlan. All rights reserved.
+          Copyright &copy; 2026 WealthIntelligence. All rights reserved.
         </div>
       </div>
       <div className="mt-5 md:mt-0 flex flex-col">

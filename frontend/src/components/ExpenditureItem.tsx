@@ -1,5 +1,5 @@
 import { FaCheck, FaTrashCan, FaXmark } from "react-icons/fa6";
-import { Expenditure } from "../../../schemas/expenditures";
+import { type DeserializedExpenditure as Expenditure } from "../lib/api/types";
 import { MdModeEditOutline } from "react-icons/md";
 import { useState } from "react";
 import {

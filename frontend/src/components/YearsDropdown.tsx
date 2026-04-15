@@ -1,4 +1,4 @@
-import { Plan } from "../../../schemas/plans";
+import { type DeserializedPlan as Plan } from "../lib/api/types";
 import { useUpdateYearOfBirthMutation } from "../lib/api/plans";
 import { birthYears, countries } from "../lib/utils";
 

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { create } from "zustand";
-import { type User } from "../../../schemas/users";
+import { type DeserializedUser as User } from "../lib/api/types";
 import { setSession } from "../services/jwt.service";
 
 const useAuthStore = create<{
@@ -23,7 +23,7 @@ const useAuthStore = create<{
     set({ authLoading: true });
     try {
       const res = await axios.post(
-        `https://capyplan.up.railway.app/api/v0/user/login`,
+        `https://wealthintelligence.up.railway.app/api/v0/user/login`,
         {
           email,
           password,
@@ -43,7 +43,7 @@ const useAuthStore = create<{
   loginWithToken: async () => {
     try {
       const res = await axios.post(
-        `https://capyplan.up.railway.app/api/v0/user/validation`,
+        `https://wealthintelligence.up.railway.app/api/v0/user/validation`,
       );
       if (res.data.result?.user && res.data.result?.token) {
         setSession(res.data.result?.token);

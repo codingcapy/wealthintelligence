@@ -1,4 +1,4 @@
-import { Generation } from "../../../schemas/generations";
+import { type DeserializedGeneration as Generation } from "../lib/api/types";
 import ReactMarkdown from "react-markdown";
 import { FaEllipsisVertical, FaTrashCan } from "react-icons/fa6";
 import { useEffect, useRef, useState } from "react";

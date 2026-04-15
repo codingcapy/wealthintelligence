@@ -1,4 +1,4 @@
-import { Plan } from "../../../schemas/plans";
+import { type DeserializedPlan as Plan } from "../lib/api/types";
 import { useUpdateLocationMutation } from "../lib/api/plans";
 import { countries } from "../lib/utils";
 

@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import { Dispatch, SetStateAction, useState } from "react";
 import { DayPicker, MonthChangeEventHandler } from "react-day-picker";
 import { useCreateFinancialGoalMutation } from "../lib/api/financialGoals";
-import { Plan } from "../../../schemas/plans";
+import { type DeserializedPlan as Plan } from "../lib/api/types";
 import { MONTHS, YEARS } from "../lib/utils";
 
 export function CreateFinancialGoal(props: {

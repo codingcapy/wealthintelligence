@@ -3,29 +3,19 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { ArgumentTypes, client, ExtractData } from "./client";
+import { api, authHeaders } from "./client";
 import { getSession } from "./plans";
-import { Income } from "../../../../schemas/incomes";
-
-type CreateIncomeArgs = ArgumentTypes<
-  typeof client.api.v0.incomes.$post
->[0]["json"];
-
-type DeleteIncomeArgs = ArgumentTypes<
-  typeof client.api.v0.incomes.delete.$post
->[0]["json"];
-
-type UpdateIncomeArgs = ArgumentTypes<
-  typeof client.api.v0.incomes.update.$post
->[0]["json"];
-
-type SerializeIncome = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.incomes.$get>>
->["incomes"][number];
+import type {
+  Income,
+  DeserializedIncome,
+  CreateIncomeArgs,
+  DeleteIncomeArgs,
+  UpdateIncomeArgs,
+} from "./types";
 
 export function mapSerializedIncomeToSchema(
-  serialized: SerializeIncome,
-): Income {
+  serialized: Income,
+): DeserializedIncome {
   return {
     ...serialized,
     createdAt: new Date(serialized.createdAt),
@@ -34,35 +24,10 @@ export function mapSerializedIncomeToSchema(
 
 async function createIncome(args: CreateIncomeArgs) {
   const token = getSession();
-  const res = await client.api.v0.incomes.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue creating your income :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  const res = await api.post<{ income: Income }>("/incomes", args, {
+    headers: authHeaders(token),
+  });
+  return res.data;
 }
 
 export const useCreateIncomeMutation = (
@@ -73,7 +38,7 @@ export const useCreateIncomeMutation = (
     mutationFn: createIncome,
     onSettled: (data) => {
       queryClient.invalidateQueries({
-        queryKey: ["incomes", data?.plan.planId],
+        queryKey: ["incomes", data?.income.planId],
       });
     },
     onError: (error) => {
@@ -86,24 +51,10 @@ export const useCreateIncomeMutation = (
 
 async function getIncomesByPlanId(planId: number) {
   const token = getSession();
-  const res = await client.api.v0.incomes[":planId"].$get(
-    {
-      param: { planId: planId.toString() },
-    },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-
-  if (!res.ok) {
-    throw new Error("Error getting incomes by plan id");
-  }
-  const { incomes } = await res.json();
-  return incomes.map(mapSerializedIncomeToSchema);
+  const res = await api.get<{ incomes: Income[] }>(`/incomes/${planId}`, {
+    headers: authHeaders(token),
+  });
+  return res.data.incomes.map(mapSerializedIncomeToSchema);
 }
 
 export const getIncomesByPlanIdQueryOptions = (planId: number) =>
@@ -114,35 +65,10 @@ export const getIncomesByPlanIdQueryOptions = (planId: number) =>
 
 async function deleteIncome(args: DeleteIncomeArgs) {
   const token = getSession();
-  const res = await client.api.v0.incomes.delete.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue deleting your income :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  const res = await api.post<{ income: Income }>("/incomes/delete", args, {
+    headers: authHeaders(token),
+  });
+  return res.data;
 }
 
 export const useDeleteIncomeMutation = (
@@ -166,35 +92,10 @@ export const useDeleteIncomeMutation = (
 
 async function UpdateIncome(args: UpdateIncomeArgs) {
   const token = getSession();
-  const res = await client.api.v0.incomes.update.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue updating your income :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  const res = await api.post<{ income: Income }>("/incomes/update", args, {
+    headers: authHeaders(token),
+  });
+  return res.data;
 }
 
 export const useUpdateIncomeMutation = (

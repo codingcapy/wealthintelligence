@@ -3,25 +3,18 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Generation } from "../../../../schemas/generations";
-import { ArgumentTypes, client, ExtractData } from "./client";
+import { api, authHeaders } from "./client";
 import { getSession } from "./plans";
-
-type CreateGenerationArgs = ArgumentTypes<
-  typeof client.api.v0.ai.generate.$post
->[0]["json"];
-
-type SerializeGeneration = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.generations.$get>>
->["generations"][number];
-
-type DeleteGenerationArgs = ArgumentTypes<
-  typeof client.api.v0.generations.delete.$post
->[0]["json"];
+import type {
+  Generation,
+  DeserializedGeneration,
+  CreateGenerationArgs,
+  DeleteGenerationArgs,
+} from "./types";
 
 export function mapSerializedGenerationToSchema(
-  serialized: SerializeGeneration,
-): Generation {
+  serialized: Generation,
+): DeserializedGeneration {
   return {
     ...serialized,
     createdAt: new Date(serialized.createdAt),
@@ -30,35 +23,10 @@ export function mapSerializedGenerationToSchema(
 
 async function createGeneration(args: CreateGenerationArgs) {
   const token = getSession();
-  const res = await client.api.v0.ai.generate.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue generating your recommendations :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  const res = await api.post<{ generation: Generation }>("/ai/generate", args, {
+    headers: authHeaders(token),
+  });
+  return res.data;
 }
 
 export const useCreateGenerationMutation = (
@@ -82,23 +50,13 @@ export const useCreateGenerationMutation = (
 
 async function getGenerationsByPlanId(planId: number) {
   const token = getSession();
-  const res = await client.api.v0.generations[":planId"].$get(
+  const res = await api.get<{ generations: Generation[] }>(
+    `/generations/${planId}`,
     {
-      param: { planId: planId.toString() },
+      headers: authHeaders(token),
     },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
   );
-  if (!res.ok) {
-    throw new Error("Error getting generations by plan id");
-  }
-  const { generations } = await res.json();
-  return generations.map(mapSerializedGenerationToSchema);
+  return res.data.generations.map(mapSerializedGenerationToSchema);
 }
 
 export const getGenerationsByPlanIdQueryOptions = (planId: number) =>
@@ -109,35 +67,14 @@ export const getGenerationsByPlanIdQueryOptions = (planId: number) =>
 
 async function deleteGeneration(args: DeleteGenerationArgs) {
   const token = getSession();
-  const res = await client.api.v0.generations.delete.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
+  const res = await api.post<{ generation: Generation }>(
+    "/generations/delete",
+    args,
+    {
+      headers: authHeaders(token),
+    },
   );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue deleting your recommendation :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  return res.data;
 }
 
 export const useDeleteGenerationMutation = (

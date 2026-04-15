@@ -1,5 +1,5 @@
 import { MdModeEditOutline } from "react-icons/md";
-import { Liability } from "../../../schemas/liabilities";
+import { type DeserializedLiability as Liability } from "../lib/api/types";
 import { FaCheck, FaTrashCan, FaXmark } from "react-icons/fa6";
 import {
   useDeleteLiabilityMutation,

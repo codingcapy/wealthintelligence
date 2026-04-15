@@ -3,27 +3,19 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { ArgumentTypes, client, ExtractData } from "./client";
+import { api, authHeaders } from "./client";
 import { getSession } from "./plans";
-import { Asset } from "../../../../schemas/assets";
+import type {
+  Asset,
+  DeserializedAsset,
+  CreateAssetArgs,
+  DeleteAssetArgs,
+  UpdateAssetArgs,
+} from "./types";
 
-type CreateAssetArgs = ArgumentTypes<
-  typeof client.api.v0.assets.$post
->[0]["json"];
-
-type DeleteAssetArgs = ArgumentTypes<
-  typeof client.api.v0.assets.delete.$post
->[0]["json"];
-
-type UpdateAssetArgs = ArgumentTypes<
-  typeof client.api.v0.assets.update.$post
->[0]["json"];
-
-type SerializeAsset = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.assets.$get>>
->["assets"][number];
-
-export function mapSerializedAssetToSchema(serialized: SerializeAsset): Asset {
+export function mapSerializedAssetToSchema(
+  serialized: Asset,
+): DeserializedAsset {
   return {
     ...serialized,
     createdAt: new Date(serialized.createdAt),
@@ -32,35 +24,10 @@ export function mapSerializedAssetToSchema(serialized: SerializeAsset): Asset {
 
 async function createAsset(args: CreateAssetArgs) {
   const token = getSession();
-  const res = await client.api.v0.assets.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue creating your asset :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  const res = await api.post<{ asset: Asset }>("/assets", args, {
+    headers: authHeaders(token),
+  });
+  return res.data;
 }
 
 export const useCreateAssetMutation = (onError?: (message: string) => void) => {
@@ -82,23 +49,10 @@ export const useCreateAssetMutation = (onError?: (message: string) => void) => {
 
 async function getAssetsByPlanId(planId: number) {
   const token = getSession();
-  const res = await client.api.v0.assets[":planId"].$get(
-    {
-      param: { planId: planId.toString() },
-    },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    throw new Error("Error getting assets by plan id");
-  }
-  const { assets } = await res.json();
-  return assets.map(mapSerializedAssetToSchema);
+  const res = await api.get<{ assets: Asset[] }>(`/assets/${planId}`, {
+    headers: authHeaders(token),
+  });
+  return res.data.assets.map(mapSerializedAssetToSchema);
 }
 
 export const getAssetsByPlanIdQueryOptions = (planId: number) =>
@@ -109,35 +63,10 @@ export const getAssetsByPlanIdQueryOptions = (planId: number) =>
 
 async function deleteAsset(args: DeleteAssetArgs) {
   const token = getSession();
-  const res = await client.api.v0.assets.delete.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue deleting your asset :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  const res = await api.post<{ asset: Asset }>("/assets/delete", args, {
+    headers: authHeaders(token),
+  });
+  return res.data;
 }
 
 export const useDeleteAssetMutation = (onError?: (message: string) => void) => {
@@ -159,35 +88,10 @@ export const useDeleteAssetMutation = (onError?: (message: string) => void) => {
 
 async function UpdateAsset(args: UpdateAssetArgs) {
   const token = getSession();
-  const res = await client.api.v0.assets.update.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue updating your asset :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  const res = await api.post<{ asset: Asset }>("/assets/update", args, {
+    headers: authHeaders(token),
+  });
+  return res.data;
 }
 
 export const useUpdateAssetMutation = (onError?: (message: string) => void) => {

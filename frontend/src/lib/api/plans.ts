@@ -3,15 +3,21 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Plan } from "../../../../schemas/plans";
-import { ArgumentTypes, client, ExtractData } from "./client";
+import { api, authHeaders } from "./client";
 import useAuthStore from "../../store/AuthStore";
+import type {
+  Plan,
+  User,
+  DeserializedPlan,
+  CreatePlanArgs,
+  DeletePlanArgs,
+  UpdatePlanArgs,
+  UpdateCurrencyArgs,
+  UpdateYearOfBirthArgs,
+  UpdateLocationArgs,
+} from "./types";
 
-type SerializePlan = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.plans.$get>>
->["plans"][number];
-
-export function mapSerializedPlanToSchema(serialized: SerializePlan): Plan {
+export function mapSerializedPlanToSchema(serialized: Plan): DeserializedPlan {
   return {
     ...serialized,
     createdAt: new Date(serialized.createdAt),
@@ -24,61 +30,12 @@ export function getSession() {
   return localStorage.getItem(TOKEN_KEY);
 }
 
-type CreatePlanArgs = ArgumentTypes<
-  typeof client.api.v0.plans.$post
->[0]["json"];
-
-type DeletePlanArgs = ArgumentTypes<
-  typeof client.api.v0.plans.delete.$post
->[0]["json"];
-
-type UpdatePlanArgs = ArgumentTypes<
-  typeof client.api.v0.plans.update.$post
->[0]["json"];
-
-type UpdateCurrencyArgs = ArgumentTypes<
-  typeof client.api.v0.plans.update.currency.$post
->[0]["json"];
-
-type UpdateYearOfBirthArgs = ArgumentTypes<
-  typeof client.api.v0.plans.update.yearofbirth.$post
->[0]["json"];
-
-type UpdateLocationArgs = ArgumentTypes<
-  typeof client.api.v0.plans.update.location.$post
->[0]["json"];
-
 async function createPlan(args: CreatePlanArgs) {
   const token = getSession();
-  const res = await client.api.v0.plans.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue creating your plan :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  const res = await api.post<{ plan: Plan; user: User }>("/plans", args, {
+    headers: authHeaders(token),
+  });
+  return res.data;
 }
 
 export const useCreatePlanMutation = (onError?: (message: string) => void) => {
@@ -103,21 +60,10 @@ export const useCreatePlanMutation = (onError?: (message: string) => void) => {
 
 async function getPlans() {
   const token = getSession();
-  const res = await client.api.v0.plans.$get(
-    {},
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    throw new Error("Error getting plans");
-  }
-  const { plans } = await res.json();
-  return plans.map(mapSerializedPlanToSchema);
+  const res = await api.get<{ plans: Plan[] }>("/plans", {
+    headers: authHeaders(token),
+  });
+  return res.data.plans.map(mapSerializedPlanToSchema);
 }
 
 export const getPlansQueryOptions = () =>
@@ -128,23 +74,10 @@ export const getPlansQueryOptions = () =>
 
 async function getPlanById(planId: number) {
   const token = getSession();
-  const res = await client.api.v0.plans[":planId"].$get(
-    {
-      param: { planId: planId.toString() },
-    },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    throw new Error("Error getting plan by id");
-  }
-  const { plan } = await res.json();
-  return mapSerializedPlanToSchema(plan);
+  const res = await api.get<{ plan: Plan }>(`/plans/${planId}`, {
+    headers: authHeaders(token),
+  });
+  return mapSerializedPlanToSchema(res.data.plan);
 }
 
 export const getPlanByIdQueryOptions = (planId: number) =>
@@ -155,35 +88,10 @@ export const getPlanByIdQueryOptions = (planId: number) =>
 
 async function deletePlan(args: DeletePlanArgs) {
   const token = getSession();
-  const res = await client.api.v0.plans.delete.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue deleting your plan :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  const res = await api.post<{ user: User }>("/plans/delete", args, {
+    headers: authHeaders(token),
+  });
+  return res.data;
 }
 
 export const useDeletePlanMutation = (onError?: (message: string) => void) => {
@@ -209,35 +117,10 @@ export const useDeletePlanMutation = (onError?: (message: string) => void) => {
 
 async function updatePlan(args: UpdatePlanArgs) {
   const token = getSession();
-  const res = await client.api.v0.plans.update.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue updating your plan :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  const res = await api.post<{ plan: Plan }>("/plans/update", args, {
+    headers: authHeaders(token),
+  });
+  return res.data;
 }
 
 export const useUpdatePlanMutation = (onError?: (message: string) => void) => {
@@ -259,35 +142,10 @@ export const useUpdatePlanMutation = (onError?: (message: string) => void) => {
 
 async function updateCurrency(args: UpdateCurrencyArgs) {
   const token = getSession();
-  const res = await client.api.v0.plans.update.currency.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue updating your currency :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  const res = await api.post<{ plan: Plan }>("/plans/update/currency", args, {
+    headers: authHeaders(token),
+  });
+  return res.data;
 }
 
 export const useUpdateCurrencyMutation = (
@@ -311,35 +169,14 @@ export const useUpdateCurrencyMutation = (
 
 async function updateYearOfBirth(args: UpdateYearOfBirthArgs) {
   const token = getSession();
-  const res = await client.api.v0.plans.update.yearofbirth.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
+  const res = await api.post<{ plan: Plan }>(
+    "/plans/update/yearofbirth",
+    args,
+    {
+      headers: authHeaders(token),
+    },
   );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue updating your year of birth :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  return res.data;
 }
 
 export const useUpdateYearOfBirthMutation = (
@@ -363,35 +200,10 @@ export const useUpdateYearOfBirthMutation = (
 
 async function updateLocation(args: UpdateLocationArgs) {
   const token = getSession();
-  const res = await client.api.v0.plans.update.location.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue updating your country of residence :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  const res = await api.post<{ plan: Plan }>("/plans/update/location", args, {
+    headers: authHeaders(token),
+  });
+  return res.data;
 }
 
 export const useUpdateLocationMutation = (

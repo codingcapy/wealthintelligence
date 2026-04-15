@@ -1,16 +1,15 @@
-import { hc, type ClientResponse } from "hono/client";
-import { type ApiRoutes } from "../../../../app";
-
-export type ArgumentTypes<F extends Function> = F extends (
-  ...args: infer A
-) => any
-  ? A
-  : never;
-
-export type ExtractData<T> =
-  T extends ClientResponse<infer Data, any, any> ? Data : never;
+import axios from "axios";
 
 const devServer = "http://localhost:3333";
 const prodServer = "https://capyplan.up.railway.app";
 
-export const client = hc<ApiRoutes>(prodServer);
+export const api = axios.create({
+  baseURL: `${prodServer}/api/v0`,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export function authHeaders(token: string | null) {
+  return token ? { Authorization: `Bearer ${token}` } : undefined;
+}

@@ -1,6 +1,6 @@
 import { MdModeEditOutline } from "react-icons/md";
 import { FaCheck, FaTrashCan, FaXmark } from "react-icons/fa6";
-import { FinancialGoal } from "../../../schemas/financialGoals";
+import { type DeserializedFinancialGoal as FinancialGoal } from "../lib/api/types";
 import { format } from "date-fns";
 import { Dispatch, SetStateAction, useState } from "react";
 import { MONTHS, YEARS } from "../lib/utils";

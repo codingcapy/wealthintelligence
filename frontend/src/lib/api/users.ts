@@ -1,52 +1,21 @@
-import { type ArgumentTypes, client, type ExtractData } from "./client";
-import {
-  queryOptions,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api, authHeaders } from "./client";
 import { getSession } from "./plans";
 import useAuthStore from "../../store/AuthStore";
-
-type CreateUserArgs = ArgumentTypes<
-  typeof client.api.v0.users.$post
->[0]["json"];
-
-type UpdateCurrentPlanArgs = ArgumentTypes<
-  typeof client.api.v0.users.update.currentplan.$post
->[0]["json"];
-
-type UpdatePasswordArgs = ArgumentTypes<
-  typeof client.api.v0.users.update.password.$post
->[0]["json"];
-
-type ResetPasswordArgs = ArgumentTypes<
-  typeof client.api.v0.users.passwordreset.$post
->[0]["json"];
+import type {
+  User,
+  CreateUserArgs,
+  UpdateCurrentPlanArgs,
+  UpdatePasswordArgs,
+  ResetPasswordArgs,
+} from "./types";
 
 async function createUser(args: CreateUserArgs) {
-  const res = await client.api.v0.users.$post({ json: args });
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue creating your account :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  if (!result.user) {
+  const res = await api.post<{ user: User }>("/users", args);
+  if (!res.data.user) {
     throw new Error("Invalid response from server");
   }
-  return result.user;
+  return res.data.user;
 }
 
 export const useCreateUserMutation = (onError?: (message: string) => void) => {
@@ -66,28 +35,14 @@ export const useCreateUserMutation = (onError?: (message: string) => void) => {
 
 async function updateCurrentPlan(args: UpdateCurrentPlanArgs) {
   const token = getSession();
-  const res = await client.api.v0.users.update.currentplan.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
+  const res = await api.post<{ user: User }>(
+    "/users/update/currentplan",
+    args,
+    {
+      headers: authHeaders(token),
+    },
   );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue updating your plan :( We'll look into it ASAP!";
-    console.log(args);
-    try {
-    } catch (error) {
-      console.log(error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  return res.data;
 }
 
 export const useUpdateCurrentPlanMutation = (
@@ -120,28 +75,14 @@ export const useUpdateCurrentPlanMutation = (
 
 async function resetPassword(args: ResetPasswordArgs) {
   const token = getSession();
-  const res = await client.api.v0.users.passwordreset.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
+  const res = await api.post<{ message: string }>(
+    "/users/passwordreset",
+    args,
+    {
+      headers: authHeaders(token),
+    },
   );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue updating your plan :( We'll look into it ASAP!";
-    console.log(args);
-    try {
-    } catch (error) {
-      console.log(error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  return res.data;
 }
 
 export const useResetPasswordMutation = (
@@ -163,35 +104,14 @@ export const useResetPasswordMutation = (
 
 async function UpdatePassword(args: UpdatePasswordArgs) {
   const token = getSession();
-  const res = await client.api.v0.users.update.password.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
+  const res = await api.post<{ message: string }>(
+    "/users/update/password",
+    args,
+    {
+      headers: authHeaders(token),
+    },
   );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue updating your password :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  return res.data;
 }
 
 export const useUpdatePasswordMutation = (

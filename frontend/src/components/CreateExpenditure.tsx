@@ -1,6 +1,6 @@
 import { SetStateAction, useState } from "react";
 import { useCreateExpenditureMutation } from "../lib/api/expenditures";
-import { Plan } from "../../../schemas/plans";
+import { type DeserializedPlan as Plan } from "../lib/api/types";
 
 export function CreateExpenditure(props: {
   plan: Plan;

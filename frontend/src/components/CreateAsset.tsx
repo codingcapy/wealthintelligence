@@ -1,6 +1,6 @@
 import { SetStateAction, useState } from "react";
 import { useCreateAssetMutation } from "../lib/api/assets";
-import { Plan } from "../../../schemas/plans";
+import { type DeserializedPlan as Plan } from "../lib/api/types";
 
 export function CreateAsset(props: {
   plan: Plan;

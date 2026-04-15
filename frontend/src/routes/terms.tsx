@@ -9,22 +9,22 @@ function TermsPage() {
     <div className="bg-[#242424] text-white min-h-screen flex flex-col">
       <div className="mx-auto max-w-[1000px] p-4 sm:p-6 leading-relaxed">
         <h1 className="text-2xl font-bold sm:mt-10 mb-2">
-          Terms and Conditions for CapyPlan
+          Terms and Conditions for WealthIntelligence
         </h1>
         <p className="text-sm text-gray-400 mb-6">
           Last Updated: March 17, 2026
         </p>
         <p className="mb-6">
-          Welcome to CapyPlan. These Terms and Conditions (“Terms”) govern your
-          use of the CapyPlan application, website, and related services
-          (collectively, the “Service”). By accessing or using the Service, you
-          agree to be bound by these Terms.
+          Welcome to WealthIntelligence. These Terms and Conditions (“Terms”)
+          govern your use of the WealthIntelligence application, website, and
+          related services (collectively, the “Service”). By accessing or using
+          the Service, you agree to be bound by these Terms.
         </p>
         <h2 className="text-xl font-semibold mt-6 mb-2">1. Eligibility</h2>
         <p className="mb-5">
           You must be at least 18 years old (or the age of majority in your
-          jurisdiction) to use this Service. By using CapyPlan, you represent
-          and warrant that you meet this requirement.
+          jurisdiction) to use this Service. By using WealthIntelligence, you
+          represent and warrant that you meet this requirement.
         </p>
         <h2 className="text-xl font-semibold mt-6 mb-2">
           2. Account Registration and Security
@@ -60,7 +60,7 @@ function TermsPage() {
           3. Description of the Service
         </h2>
         <p className="mb-3">
-          CapyPlan is a financial planning tool that allows users to:
+          WealthIntelligence is a financial planning tool that allows users to:
         </p>
         <ul className="list-disc pl-6 mb-5 space-y-1">
           <li>Create, update, and delete financial plans</li>
@@ -80,7 +80,8 @@ function TermsPage() {
           4. Financial Disclaimer
         </h2>
         <p className="mb-3">
-          CapyPlan provides informational and educational content only.
+          WealthIntelligence provides informational and educational content
+          only.
         </p>
         <ul className="list-disc pl-6 mb-4 space-y-1">
           <li>
@@ -102,16 +103,16 @@ function TermsPage() {
         <ul className="list-disc pl-6 mb-5 space-y-1">
           <li>You are solely responsible for your financial decisions.</li>
           <li>
-            CapyPlan is not liable for any outcomes resulting from your reliance
-            on the recommendations.
+            WealthIntelligence is not liable for any outcomes resulting from
+            your reliance on the recommendations.
           </li>
         </ul>
         <h2 className="text-xl font-semibold mt-6 mb-2">
           5. AI-Generated Content
         </h2>
         <p className="mb-3">
-          CapyPlan may provide recommendations generated using artificial
-          intelligence.
+          WealthIntelligence may provide recommendations generated using
+          artificial intelligence.
         </p>
         <ul className="list-disc pl-6 mb-5 space-y-1">
           <li>
@@ -131,7 +132,7 @@ function TermsPage() {
           financial information.
         </p>
         <p className="mb-2">
-          By using CapyPlan, you grant us a limited license to:
+          By using WealthIntelligence, you grant us a limited license to:
         </p>
         <ul className="list-disc pl-6 mb-4 space-y-1">
           <li>
@@ -178,10 +179,10 @@ function TermsPage() {
           10. Limitation of Liability
         </h2>
         <p className="mb-5">
-          To the fullest extent permitted by law, CapyPlan and its operators
-          shall not be liable for any indirect, incidental, or consequential
-          damages, including financial losses or decisions made based on
-          recommendations provided by the Service.
+          To the fullest extent permitted by law, WealthIntelligence and its
+          operators shall not be liable for any indirect, incidental, or
+          consequential damages, including financial losses or decisions made
+          based on recommendations provided by the Service.
         </p>
         <h2 className="text-xl font-semibold mt-6 mb-2">11. No Warranty</h2>
         <p className="mb-5">
@@ -218,8 +219,8 @@ function TermsPage() {
         </p>
         <h2 className="text-xl font-semibold mt-6 mb-2">16. Acknowledgment</h2>
         <p className="mb-10">
-          By using CapyPlan, you acknowledge that you have read, understood, and
-          agree to be bound by these Terms and Conditions.
+          By using WealthIntelligence, you acknowledge that you have read,
+          understood, and agree to be bound by these Terms and Conditions.
         </p>
       </div>
     </div>

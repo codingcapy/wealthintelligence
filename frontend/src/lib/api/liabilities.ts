@@ -3,29 +3,19 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Liability } from "../../../../schemas/liabilities";
-import { ArgumentTypes, client, ExtractData } from "./client";
+import { api, authHeaders } from "./client";
 import { getSession } from "./plans";
-
-type CreateLiabilityArgs = ArgumentTypes<
-  typeof client.api.v0.liabilities.$post
->[0]["json"];
-
-type DeleteLiabilityArgs = ArgumentTypes<
-  typeof client.api.v0.liabilities.delete.$post
->[0]["json"];
-
-type UpdateLiabilityArgs = ArgumentTypes<
-  typeof client.api.v0.liabilities.update.$post
->[0]["json"];
-
-type SerializeLiability = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.liabilities.$get>>
->["liabilities"][number];
+import type {
+  Liability,
+  DeserializedLiability,
+  CreateLiabilityArgs,
+  DeleteLiabilityArgs,
+  UpdateLiabilityArgs,
+} from "./types";
 
 export function mapSerializedLiabilityToSchema(
-  serialized: SerializeLiability,
-): Liability {
+  serialized: Liability,
+): DeserializedLiability {
   return {
     ...serialized,
     createdAt: new Date(serialized.createdAt),
@@ -34,35 +24,10 @@ export function mapSerializedLiabilityToSchema(
 
 async function createLiability(args: CreateLiabilityArgs) {
   const token = getSession();
-  const res = await client.api.v0.liabilities.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
-  );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue creating your liability :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  const res = await api.post<{ liability: Liability }>("/liabilities", args, {
+    headers: authHeaders(token),
+  });
+  return res.data;
 }
 
 export const useCreateLiabilityMutation = (
@@ -86,23 +51,13 @@ export const useCreateLiabilityMutation = (
 
 async function getLiabilitiesByPlanId(planId: number) {
   const token = getSession();
-  const res = await client.api.v0.liabilities[":planId"].$get(
+  const res = await api.get<{ liabilities: Liability[] }>(
+    `/liabilities/${planId}`,
     {
-      param: { planId: planId.toString() },
+      headers: authHeaders(token),
     },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
   );
-  if (!res.ok) {
-    throw new Error("Error getting liabilities by plan id");
-  }
-  const { liabilities } = await res.json();
-  return liabilities.map(mapSerializedLiabilityToSchema);
+  return res.data.liabilities.map(mapSerializedLiabilityToSchema);
 }
 
 export const getLiabilitiesByPlanIdQueryOptions = (planId: number) =>
@@ -113,35 +68,14 @@ export const getLiabilitiesByPlanIdQueryOptions = (planId: number) =>
 
 async function deleteLiability(args: DeleteLiabilityArgs) {
   const token = getSession();
-  const res = await client.api.v0.liabilities.delete.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
+  const res = await api.post<{ liability: Liability }>(
+    "/liabilities/delete",
+    args,
+    {
+      headers: authHeaders(token),
+    },
   );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue deleting your liability :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  return res.data;
 }
 
 export const useDeleteLiabilityMutation = (
@@ -165,35 +99,14 @@ export const useDeleteLiabilityMutation = (
 
 async function UpdateLiability(args: UpdateLiabilityArgs) {
   const token = getSession();
-  const res = await client.api.v0.liabilities.update.$post(
-    { json: args },
-    token
-      ? {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      : undefined,
+  const res = await api.post<{ liability: Liability }>(
+    "/liabilities/update",
+    args,
+    {
+      headers: authHeaders(token),
+    },
   );
-  if (!res.ok) {
-    let errorMessage =
-      "There was an issue updating your liability :( We'll look into it ASAP!";
-    try {
-      const errorResponse = await res.json();
-      if (
-        errorResponse &&
-        typeof errorResponse === "object" &&
-        "message" in errorResponse
-      ) {
-        errorMessage = String(errorResponse.message);
-      }
-    } catch (error) {
-      console.error("Failed to parse error response:", error);
-    }
-    throw new Error(errorMessage);
-  }
-  const result = await res.json();
-  return result;
+  return res.data;
 }
 
 export const useUpdateLiabilityMutation = (

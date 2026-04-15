@@ -1,6 +1,6 @@
 import { SetStateAction, useState } from "react";
 import { useCreateLiabilityMutation } from "../lib/api/liabilities";
-import { Plan } from "../../../schemas/plans";
+import { type DeserializedPlan as Plan } from "../lib/api/types";
 
 export function CreateLiability(props: {
   plan: Plan;

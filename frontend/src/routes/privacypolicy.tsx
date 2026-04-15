@@ -9,18 +9,18 @@ function PrivacyPage() {
     <div className="bg-[#242424] text-white min-h-screen flex flex-col">
       <div className="mx-auto max-w-[1000px] p-4 sm:p-6 leading-relaxed">
         <h1 className="text-2xl font-bold sm:mt-10 mb-2">
-          Privacy Policy for CapyPlan
+          Privacy Policy for WealthIntelligence
         </h1>
         <p className="text-sm text-gray-400 mb-6">
           Last Updated: March 17, 2026
         </p>
         <p className="mb-6">
-          CapyPlan (“we”, “us”, or “our”) is committed to protecting your
-          privacy. This Privacy Policy explains how we collect, use, store, and
-          disclose your information when you use the CapyPlan application,
-          website, and related services (collectively, the “Service”). By using
-          the Service, you agree to the collection and use of information in
-          accordance with this Privacy Policy.
+          WealthIntelligence (“we”, “us”, or “our”) is committed to protecting
+          your privacy. This Privacy Policy explains how we collect, use, store,
+          and disclose your information when you use the WealthIntelligence
+          application, website, and related services (collectively, the
+          “Service”). By using the Service, you agree to the collection and use
+          of information in accordance with this Privacy Policy.
         </p>
         <h2 className="text-xl font-semibold mt-6 mb-2">
           1. Information We Collect
