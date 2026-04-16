@@ -1,10 +1,7 @@
 import axios from "axios";
 
-const devServer = "http://localhost:3333";
-const prodServer = "https://capyplan.up.railway.app";
-
 export const api = axios.create({
-  baseURL: `${prodServer}/api/v0`,
+  baseURL: "/api/v0",
   headers: {
     "Content-Type": "application/json",
   },

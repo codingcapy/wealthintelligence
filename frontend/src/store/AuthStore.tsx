@@ -1,6 +1,6 @@
-import axios from "axios";
 import { create } from "zustand";
 import { type DeserializedUser as User } from "../lib/api/types";
+import { api } from "../lib/api/client";
 import { setSession } from "../services/jwt.service";
 
 const useAuthStore = create<{
@@ -10,6 +10,7 @@ const useAuthStore = create<{
   setUser: (args: User) => void;
   logoutService: () => void;
   loginService: (email: string, password: string) => void;
+  loginWithToken: () => void;
 }>((set, get) => ({
   user: null,
   authLoading: false,
@@ -22,13 +23,10 @@ const useAuthStore = create<{
   loginService: async (email, password) => {
     set({ authLoading: true });
     try {
-      const res = await axios.post(
-        `https://wealthintelligence.up.railway.app/api/v0/user/login`,
-        {
-          email,
-          password,
-        },
-      );
+      const res = await api.post("/user/login", {
+        email,
+        password,
+      });
       if (res.data.result?.user && res.data.result?.token) {
         setSession(res.data.result?.token);
         set({ user: res.data.result?.user, authLoading: false });
@@ -42,9 +40,7 @@ const useAuthStore = create<{
   },
   loginWithToken: async () => {
     try {
-      const res = await axios.post(
-        `https://wealthintelligence.up.railway.app/api/v0/user/validation`,
-      );
+      const res = await api.post("/user/validation");
       if (res.data.result?.user && res.data.result?.token) {
         setSession(res.data.result?.token);
         set({ user: res.data.result?.user, tokenLoading: false });

@@ -3,9 +3,7 @@ import { useEffect } from "react";
 import useAuthStore from "../../store/AuthStore";
 import { getAccessToken, setSession } from "../../services/jwt.service";
 
-//@ts-ignore
-export default function Auth({ children }) {
-  //@ts-ignore
+export default function Auth({ children }: { children: React.ReactNode }) {
   const { loginWithToken, tokenLoading, logoutService } = useAuthStore(
     (state) => state,
   );

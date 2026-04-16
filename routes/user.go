@@ -27,7 +27,7 @@ func verifyPassword(hash, password string) (bool, error) {
 	salt := parts[0]
 	keyHex := parts[1]
 
-	derivedKey, err := scrypt.Key([]byte(password), []byte(salt), 32768, 8, 1, 64)
+	derivedKey, err := scrypt.Key([]byte(password), []byte(salt), 16384, 8, 1, 64)
 	if err != nil {
 		return false, err
 	}
@@ -47,7 +47,7 @@ func hashPassword(password string) (string, error) {
 	}
 	salt := hex.EncodeToString(saltBytes)
 
-	derivedKey, err := scrypt.Key([]byte(password), []byte(salt), 32768, 8, 1, 64)
+	derivedKey, err := scrypt.Key([]byte(password), []byte(salt), 16384, 8, 1, 64)
 	if err != nil {
 		return "", err
 	}
@@ -81,14 +81,18 @@ func UserRouter() chi.Router {
 		var user models.User
 		err := db.DB.Get(&user, "SELECT * FROM users WHERE email = $1", body.Email)
 		if err != nil {
-			// user not found — return nulls like your TS version
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"user": nil, "token": nil}})
 			return
 		}
 
 		valid, err := verifyPassword(user.Password, body.Password)
-		if err != nil || !valid {
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"user": nil, "token": nil}})
+			return
+		}
+		if !valid {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"user": nil, "token": nil}})
 			return
