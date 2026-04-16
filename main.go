@@ -38,9 +38,9 @@ func main() {
 		r.Mount("/expenditures", routes.ExpendituresRouter())
 		r.Mount("/financialgoals", routes.FinancialGoalsRouter())
 		r.Mount("/generations", routes.GenerationsRouter())
+		r.Mount("/user", routes.UserRouter())
 	})
 
-	// Static frontend serving
 	stripped, _ := fs.Sub(staticFiles, "frontend/dist")
 	fileServer := http.FileServer(http.FS(stripped))
 
@@ -49,12 +49,10 @@ func main() {
 
 		_, err := stripped.Open(path)
 		if err != nil {
-			// file not found — serve index.html for React router to handle
 			r.URL.Path = "/"
 			path = "index.html"
 		}
 
-		// Set correct MIME types
 		switch {
 		case strings.HasSuffix(path, ".js"):
 			w.Header().Set("Content-Type", "application/javascript")
