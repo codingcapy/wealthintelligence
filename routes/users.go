@@ -19,18 +19,6 @@ import (
 func UsersRouter() chi.Router {
 	r := chi.NewRouter()
 
-	// GET / — fetch all users
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		users := []models.User{}
-		err := db.DB.Select(&users, "SELECT * FROM users")
-		if err != nil {
-			http.Error(w, "Failed to fetch users", http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(users)
-	})
-
 	// POST / — create user + auto-create plan
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		var body struct {
@@ -91,12 +79,23 @@ func UsersRouter() chi.Router {
 		}
 
 		// Auto-create plan
-		_, err = db.DB.Exec(
-			`INSERT INTO plans (user, title) VALUES ($1, $2)`,
+		var planID int
+		err = db.DB.QueryRow(
+			`INSERT INTO plans ("user", title) VALUES ($1, $2) RETURNING plan_id`,
 			newUser.UserID, newUser.Username+"'s plan",
-		)
+		).Scan(&planID)
 		if err != nil {
 			http.Error(w, "Error while creating plan", http.StatusInternalServerError)
+			return
+		}
+
+		// Update user's current_plan
+		err = db.DB.QueryRowx(
+			`UPDATE users SET current_plan = $1 WHERE user_id = $2 RETURNING *`,
+			planID, newUser.UserID,
+		).StructScan(&newUser)
+		if err != nil {
+			http.Error(w, "Error while updating current plan", http.StatusInternalServerError)
 			return
 		}
 
