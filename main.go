@@ -39,6 +39,7 @@ func main() {
 		r.Mount("/financialgoals", routes.FinancialGoalsRouter())
 		r.Mount("/generations", routes.GenerationsRouter())
 		r.Mount("/user", routes.UserRouter())
+		r.Mount("/ai", routes.AiRouter())
 	})
 
 	stripped, _ := fs.Sub(staticFiles, "frontend/dist")
