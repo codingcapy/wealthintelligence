@@ -37,7 +37,7 @@ func AiRouter() chi.Router {
 
 		// Verify plan belongs to user
 		var plan models.Plan
-		err := db.DB.Get(&plan, "SELECT * FROM plans WHERE plan_id = $1 AND user = $2", body.PlanID, userID)
+		err := db.DB.Get(&plan, `SELECT * FROM plans WHERE plan_id = $1 AND "user" = $2`, body.PlanID, userID)
 		if err != nil {
 			http.Error(w, "Plan not found or unauthorized", http.StatusUnauthorized)
 			return
