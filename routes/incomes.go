@@ -84,7 +84,7 @@ func IncomesRouter() chi.Router {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]any{"plan": newIncome})
+		json.NewEncoder(w).Encode(map[string]any{"income": newIncome})
 	})
 
 	// POST /delete — delete income

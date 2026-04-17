@@ -16,6 +16,26 @@ import (
 func PlansRouter() chi.Router {
 	r := chi.NewRouter()
 
+	// GET / — get all plans for the authenticated user
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		userID, ok := getUserIDFromToken(r)
+		if !ok {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		var plans []models.Plan
+		err := db.DB.Select(&plans, `SELECT * FROM plans WHERE "user" = $1 ORDER BY created_at DESC`, userID)
+		if err != nil {
+			log.Println("Error fetching plans:", err)
+			http.Error(w, "Error fetching plans", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]any{"plans": plans})
+	})
+
 	// GET /:planId — get plan by id
 	r.Get("/{planId}", func(w http.ResponseWriter, r *http.Request) {
 		userID, ok := getUserIDFromToken(r)
