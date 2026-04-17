@@ -103,7 +103,7 @@ func LiabilitiesRouter() chi.Router {
 		}
 		var deletedLiability models.Liability
 		err = db.DB.QueryRowx(
-			`DELETE FROM liabilities WHERE liabilities_id = $1 RETURNING *`,
+			`DELETE FROM liabilities WHERE liability_id = $1 RETURNING *`,
 			body.LiabilityID,
 		).StructScan(&deletedLiability)
 		if err != nil {
@@ -147,7 +147,7 @@ func LiabilitiesRouter() chi.Router {
 		}
 		var updatedLiability models.Liability
 		err = db.DB.QueryRowx(
-			`UPDATE liabilities SET name = $1, value = $2, roi = $3 WHERE liability_id = $4 RETURNING *`,
+			`UPDATE liabilities SET name = $1, amount = $2, interest = $3 WHERE liability_id = $4 RETURNING *`,
 			body.Name, body.Amount, body.Interest, body.LiabilityID,
 		).StructScan(&updatedLiability)
 		if err != nil {
