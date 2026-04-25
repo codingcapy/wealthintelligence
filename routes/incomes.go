@@ -72,6 +72,10 @@ func IncomesRouter() chi.Router {
 			return
 		}
 
+		if !countLimitCheck(w, "incomes", body.PlanID) {
+			return
+		}
+
 		var newIncome models.Income
 		err := db.DB.QueryRowx(
 			`INSERT INTO incomes (plan_id, company, position, amount, tax) VALUES ($1, $2, $3, $4, $5) RETURNING *`,

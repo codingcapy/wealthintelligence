@@ -69,6 +69,10 @@ func ExpendituresRouter() chi.Router {
 			return
 		}
 
+		if !countLimitCheck(w, "expenditures", body.PlanID) {
+			return
+		}
+
 		var newExpenditure models.Expenditure
 		err := db.DB.QueryRowx(
 			`INSERT INTO expenditures (plan_id, name, amount) VALUES ($1, $2, $3) RETURNING *`,

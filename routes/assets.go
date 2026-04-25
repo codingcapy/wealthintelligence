@@ -70,6 +70,10 @@ func AssetsRouter() chi.Router {
 			return
 		}
 
+		if !countLimitCheck(w, "assets", body.PlanID) {
+			return
+		}
+
 		var newAsset models.Asset
 		err := db.DB.QueryRowx(
 			`INSERT INTO assets (plan_id, name, value, roi) VALUES ($1, $2, $3, $4) RETURNING *`,

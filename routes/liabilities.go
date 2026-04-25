@@ -61,6 +61,9 @@ func LiabilitiesRouter() chi.Router {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
+		if !countLimitCheck(w, "liabilities", body.PlanID) {
+			return
+		}
 		var newLiability models.Liability
 		err := db.DB.QueryRowx(
 			`INSERT INTO liabilities (plan_id, name, amount, interest) VALUES ($1, $2, $3, $4) RETURNING *`,

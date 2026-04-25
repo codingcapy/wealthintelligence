@@ -71,6 +71,10 @@ func FinancialGoalsRouter() chi.Router {
 			return
 		}
 
+		if !countLimitCheck(w, "financial_goals", body.PlanID) {
+			return
+		}
+
 		var newGoal models.FinancialGoal
 		err := db.DB.QueryRowx(
 			`INSERT INTO financial_goals (plan_id, name, amount, target_date) VALUES ($1, $2, $3, $4) RETURNING *`,
