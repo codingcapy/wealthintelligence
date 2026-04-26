@@ -78,8 +78,19 @@ func PlansRouter() chi.Router {
 			return
 		}
 
+		var planCount int
+		err := db.DB.QueryRow(`SELECT COUNT(*) FROM plans WHERE "user" = $1`, userID).Scan(&planCount)
+		if err != nil {
+			http.Error(w, "Error checking limit", http.StatusInternalServerError)
+			return
+		}
+		if planCount >= 20 {
+			http.Error(w, "Limit of 20 plans reached", http.StatusUnprocessableEntity)
+			return
+		}
+
 		var newPlan models.Plan
-		err := db.DB.QueryRowx(
+		err = db.DB.QueryRowx(
 			`INSERT INTO plans ("user", title) VALUES ($1, $2) RETURNING *`,
 			userID, body.Title,
 		).StructScan(&newPlan)

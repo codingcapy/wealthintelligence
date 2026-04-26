@@ -21,7 +21,7 @@ import { LiabilityItem } from "../components/LiabilityItem";
 import { getFinancialGoalsByPlanIdQueryOptions } from "../lib/api/financialGoals";
 import { FinancialGoalItem } from "../components/FinancialGoalItem";
 import {
-  getGenerationsByPlanIdQueryOptions,
+  useInfiniteGenerationsByPlanId,
   useCreateGenerationMutation,
 } from "../lib/api/generations";
 import { GenerationItem } from "../components/GenerationItem";
@@ -88,13 +88,14 @@ function Dashboard() {
     enabled: !!plan?.planId,
   });
   const {
-    data: generations,
+    data: generationsData,
     isLoading: generationsLoading,
     error: generationsError,
-  } = useQuery({
-    ...getGenerationsByPlanIdQueryOptions(plan?.planId ?? 0),
-    enabled: !!plan?.planId,
-  });
+    fetchNextPage: fetchMoreGenerations,
+    hasNextPage: hasMoreGenerations,
+    isFetchingNextPage: isFetchingMoreGenerations,
+  } = useInfiniteGenerationsByPlanId(plan?.planId ?? 0);
+  const generations = generationsData?.pages.flatMap((p) => p.generations);
   const { mutate: createGeneration, isPending: createGenerationPending } =
     useCreateGenerationMutation();
   const totalIncome =
@@ -575,9 +576,20 @@ function Dashboard() {
               ) : generationsError ? (
                 <div>Error loading AI recommendations</div>
               ) : generations ? (
-                generations.map((g) => (
-                  <GenerationItem key={g.generationId} g={g} />
-                ))
+                <>
+                  {generations.map((g) => (
+                    <GenerationItem key={g.generationId} g={g} />
+                  ))}
+                  {hasMoreGenerations && (
+                    <button
+                      onClick={() => fetchMoreGenerations()}
+                      disabled={isFetchingMoreGenerations}
+                      className="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      {isFetchingMoreGenerations ? "Loading..." : "Load more"}
+                    </button>
+                  )}
+                </>
               ) : (
                 <div></div>
               )}

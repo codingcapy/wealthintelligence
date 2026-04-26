@@ -1,5 +1,5 @@
 import {
-  queryOptions,
+  useInfiniteQuery,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
@@ -8,6 +8,7 @@ import { getSession } from "./plans";
 import type {
   Generation,
   DeserializedGeneration,
+  GenerationsPage,
   CreateGenerationArgs,
   DeleteGenerationArgs,
 } from "./types";
@@ -48,21 +49,32 @@ export const useCreateGenerationMutation = (
   });
 };
 
-async function getGenerationsByPlanId(planId: number) {
+async function getGenerationsByPlanId(
+  planId: number,
+  cursor: number | null,
+): Promise<GenerationsPage> {
   const token = getSession();
-  const res = await api.get<{ generations: Generation[] }>(
-    `/generations/${planId}`,
-    {
-      headers: authHeaders(token),
-    },
-  );
-  return res.data.generations.map(mapSerializedGenerationToSchema);
+  const params = new URLSearchParams();
+  if (cursor) params.set("cursor", String(cursor));
+  const res = await api.get<{
+    generations: Generation[];
+    nextCursor: number | null;
+  }>(`/generations/${planId}?${params.toString()}`, {
+    headers: authHeaders(token),
+  });
+  return {
+    generations: res.data.generations.map(mapSerializedGenerationToSchema),
+    nextCursor: res.data.nextCursor,
+  };
 }
 
-export const getGenerationsByPlanIdQueryOptions = (planId: number) =>
-  queryOptions({
+export const useInfiniteGenerationsByPlanId = (planId: number) =>
+  useInfiniteQuery({
     queryKey: ["generations", planId],
-    queryFn: () => getGenerationsByPlanId(planId),
+    queryFn: ({ pageParam }) => getGenerationsByPlanId(planId, pageParam),
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    enabled: !!planId,
   });
 
 async function deleteGeneration(args: DeleteGenerationArgs) {

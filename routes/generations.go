@@ -15,7 +15,8 @@ import (
 func GenerationsRouter() chi.Router {
 	r := chi.NewRouter()
 
-	// GET /:planId — get generations for a plan
+	// GET /:planId — get generations for a plan (cursor-based pagination)
+	// Query params: cursor=<generation_id> (exclusive, for next page), limit=<n> (default 20)
 	r.Get("/{planId}", func(w http.ResponseWriter, r *http.Request) {
 		userID, ok := getUserIDFromToken(r)
 		if !ok {
@@ -34,16 +35,47 @@ func GenerationsRouter() chi.Router {
 			return
 		}
 
+		limit := 20
+		if l := r.URL.Query().Get("limit"); l != "" {
+			if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 && parsed <= 100 {
+				limit = parsed
+			}
+		}
+
+		cursor := 0
+		if c := r.URL.Query().Get("cursor"); c != "" {
+			if parsed, err := strconv.Atoi(c); err == nil {
+				cursor = parsed
+			}
+		}
+
 		generations := []models.Generation{}
-		err = db.DB.Select(&generations, "SELECT * FROM generations WHERE plan_id = $1", planID)
+		if cursor > 0 {
+			err = db.DB.Select(&generations,
+				"SELECT * FROM generations WHERE plan_id = $1 AND generation_id < $2 ORDER BY generation_id DESC LIMIT $3",
+				planID, cursor, limit+1,
+			)
+		} else {
+			err = db.DB.Select(&generations,
+				"SELECT * FROM generations WHERE plan_id = $1 ORDER BY generation_id DESC LIMIT $2",
+				planID, limit+1,
+			)
+		}
 		if err != nil {
 			log.Println("Error fetching generations:", err)
 			http.Error(w, "Error fetching generations", http.StatusInternalServerError)
 			return
 		}
 
+		var nextCursor *int
+		if len(generations) > limit {
+			generations = generations[:limit]
+			id := generations[limit-1].GenerationID
+			nextCursor = &id
+		}
+
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]any{"generations": generations})
+		json.NewEncoder(w).Encode(map[string]any{"generations": generations, "nextCursor": nextCursor})
 	})
 
 	// POST /delete — delete generation

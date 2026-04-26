@@ -122,6 +122,11 @@ export interface DeserializedGeneration extends Omit<Generation, "createdAt"> {
   createdAt: Date;
 }
 
+export interface GenerationsPage {
+  generations: DeserializedGeneration[];
+  nextCursor: number | null;
+}
+
 // Request types
 
 export interface CreateAssetArgs {
